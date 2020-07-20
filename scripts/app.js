@@ -69,25 +69,16 @@ const createChart = function(chartData1,chartData2) {
 }
 
 const parseData = function(data) {
-    const dates = data.rates;
+    console.log(Object.entries(data.rates));
+    const dates = Object.entries(data.rates);
     let count = 0
-    //let chartData = new Array();
     let chartData1 = new Array();
     let chartData2 = new Array();
-    for(let i = 1; i <=31; i++ ) {
-        formattedDay = String(i).padStart(2, '0')
-        let day = "2019-01-"+formattedDay;
-        let date = dates[day];
-        if(isValid(date)){
-            chartData1.push({date:day, rate:date["INR"]});
-            chartData2.push({date:day, rate:date["GBP"]});
-//            console.log(date["INR"]);
-            count = count + 1;
-            //console.log(date["GBP"]);
-        }
-    }
-//        console.log(chartData);
-    //createChart(chartData);
+    dates.forEach(function(date){
+        console.log(date[1].INR);
+            chartData1.push({date:date[0], rate:date[1].INR});
+            chartData2.push({date:date[0], rate:date[1].GBP});
+    });
     createChart(chartData1,chartData2);
 }
 const setData = function(latestdata) {
@@ -95,20 +86,13 @@ const setData = function(latestdata) {
     //console.log(latestrate['INR'])
     latestrateINR = String(latestrate['INR']);
     //console.log(latestrate['GBP'])
-    latestrateGBP = String(latestrate['GBP']);
+    latestrateGBP = String(latestrate['CAD']);
 }
 
-const isValid = function(date) {
-    if(typeof date === "object"){
-        return true;
-    }
-    return false;
-}
-
-getData('../latest-rates.json')
+getData('https://api.exchangeratesapi.io/latest')
     .then(latestdata => setData(latestdata))
     .catch(error => console.log(error));
 
-getData('../data.json')
+getData('https://api.exchangeratesapi.io/history?start_at=2020-07-01&end_at=2020-07-20')
     .then(data => parseData(data))
     .catch(err => console.log(err));
