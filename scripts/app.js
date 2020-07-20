@@ -1,3 +1,5 @@
+var latestrateINR = "";
+var latestrateGBP = "";
 const getData = async(url) => {
     const response = await fetch(url);
     if(!response.ok)
@@ -6,12 +8,10 @@ const getData = async(url) => {
     return data;
 }
 
-const createChart = function(chartData1,chartData2) {//chartData1,chartData2
-    //console.log(chartData);
+const createChart = function(chartData1,chartData2) {
     console.log(chartData1)
     console.log(chartData2)
     labelArray = new Array();
-    //dataArray = new Array();
     INRArray = new Array();
     GBPArray = new Array();
 
@@ -34,25 +34,36 @@ const createChart = function(chartData1,chartData2) {//chartData1,chartData2
             labels: labelArray,
             datasets: [
                 {
-                    label: 'INR to EUR rates',
-                    backgroundColor: null,
+                    label: 'INR (current: ' + latestrateINR + ')',
                     borderColor: 'rgb(0, 255, 255)',
-                    //data: dataArray
                     data: INRArray
                 },
                 {
-                    label: 'GBP to EUR rates',
-                    backgroundColor: null,
+                    label: 'GBP (current: ' + latestrateGBP + ')',
                     borderColor: 'rgb(255, 99, 132)',
-                    //data: dataArray
                     data: GBPArray
                 }
             ]
         },
-
         // Configuration options go here
         options: {
-            fill: false
+            fill: false,
+            title: {
+            display: true,
+            text: 'Chart for Currency Exchange'
+            },
+            tooltips:{
+                callback: {
+                    label: function(tooltipItem, data) {
+                        alert('CALLED');
+                        var label = "current ";
+                        var item = data.datasets[tooltipItem.datasetIndex];
+                        console.log(item);
+
+                    }
+                }
+
+            }
         }
     });
 }
@@ -68,7 +79,6 @@ const parseData = function(data) {
         let day = "2019-01-"+formattedDay;
         let date = dates[day];
         if(isValid(date)){
-            //chartData.push({date:day, rate:date["INR"]});
             chartData1.push({date:day, rate:date["INR"]});
             chartData2.push({date:day, rate:date["GBP"]});
 //            console.log(date["INR"]);
@@ -80,7 +90,13 @@ const parseData = function(data) {
     //createChart(chartData);
     createChart(chartData1,chartData2);
 }
-
+const setData = function(latestdata) {
+    const latestrate = latestdata.rates;
+    //console.log(latestrate['INR'])
+    latestrateINR = String(latestrate['INR']);
+    //console.log(latestrate['GBP'])
+    latestrateGBP = String(latestrate['GBP']);
+}
 
 const isValid = function(date) {
     if(typeof date === "object"){
@@ -88,6 +104,10 @@ const isValid = function(date) {
     }
     return false;
 }
+
+getData('../latest-rates.json')
+    .then(latestdata => setData(latestdata))
+    .catch(error => console.log(error));
 
 getData('../data.json')
     .then(data => parseData(data))
